@@ -22,11 +22,13 @@ public:
 	}
 
 	void Update() {
+		int i = 0;
 		for (auto& ant : ants) {
 			ant.Update(pheromones, foods);
-			if (frame == phSpawnRate) {
+			if ((frame + i) % phSpawnRate == 0) {
 				spawnPheromone(Pheromone::Type::toHome, ant.getPos());
 			}
+			i++;
 		}
 		for (std::vector<Pheromone>::iterator ph = pheromones.begin(); ph != pheromones.end();) {
 			if (ph->isDepleted()) {
