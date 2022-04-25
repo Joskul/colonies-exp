@@ -13,10 +13,12 @@ public:
 		return pos;
 	}
 	void Draw(Graphics& gfx) {
-		gfx.putPixel(pos.x - 1, pos.y - 1, c);
-		gfx.putPixel(pos.x, pos.y - 1, c);
-		gfx.putPixel(pos.x - 1, pos.y, c);
-		gfx.putPixel(pos.x, pos.y, c);
+		int x = (int)pos.x;
+		int y = (int)pos.y;
+		gfx.putPixel(x - 1, y - 1, c);
+		gfx.putPixel(x, y - 1, c);
+		gfx.putPixel(x - 1, y, c);
+		gfx.putPixel(x, y, c);
 	}
 protected:
 	Entity(Vec2<float> setPos)
@@ -36,15 +38,16 @@ public:
 		noFood
 	};
 public:
-	Pheromone(Type setType, float setDissipationRate, Vec2<float> setPos)
+	Pheromone(Type setType, float setDissipationRate, float setDepletionThreshold, Vec2<float> setPos)
 		:
 		type(setType),
 		dissipationRate(setDissipationRate),
+		depletionThreshold(setDepletionThreshold),
 		Entity(setPos)
 	{
 		switch (type) {
 		case Type::toHome:
-			c = {255,255,192};
+			c = {64,255,192};
 			break;
 		case Type::toFood:
 			c = { 255,128,64 };
@@ -58,11 +61,22 @@ public:
 	Type getType() {
 		return type;
 	}
-	void Update() {
-		intensity *= dissipationRate;
-		c = baseColor * (1 / (1 - depletionThreshold)) * (intensity - depletionThreshold);
-		//c = baseColor * intensity;
+
+	// linear depletion -- flashes when the trail ends
+	//void Update(float deltaTime) {
+	//	intensity -= dissipationRate * deltaTime;
+	//	c = baseColor * (1.0f / (1.0f - depletionThreshold)) * (intensity - depletionThreshold); // smoothed calculation
+	//	//c = baseColor * intensity; // unmapped calculation
+	//}
+
+	// reciprocal depletion
+	void Update(float deltaTime) {
+		timeCounter += deltaTime;
+		intensity = std::pow(dissipationRate, timeCounter);
+		c = baseColor * (1.0f / (1.0f - depletionThreshold)) * (intensity - depletionThreshold); // smoothed calculation
+		//c = baseColor * intensity; // unmapped calculation
 	}
+
 	float getIntensity() const {
 		return intensity;
 	}
@@ -71,8 +85,9 @@ public:
 	}
 private:
 	float intensity = 1.0f;
-	float depletionThreshold = 0.1f;
 	float dissipationRate;
+	float depletionThreshold;
+	float timeCounter = 0.0f;
 	Type type;
 
 	Color baseColor;

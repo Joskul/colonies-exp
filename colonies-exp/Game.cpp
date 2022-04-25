@@ -5,7 +5,7 @@
 Game::Game(const char* title, int setX, int setY, bool fullscreen)
 	:
 	gfx(title, setX, setY, fullscreen),
-	colony(1000,0.4f,0.15f,8,0.99f)
+	colony(1000)
 {
 }
 
@@ -29,12 +29,10 @@ void Game::handleEvents()
 
 void Game::updateModel()
 {
-	tickCounter += frame.Mark();
-	if (tickCounter > secPerFrame) {
-		std::cout << "FPS: " << 1.0f / tickCounter << std::endl;
-		colony.Update();
-		tickCounter = 0;
-	}
+	const float deltaTime = frame.Mark();
+	colony.Update(deltaTime);
+
+	std::cout << "FPS: " << 1 / deltaTime << std::endl;
 }
 
 void Game::drawModel()

@@ -17,8 +17,7 @@ public:
 	bool running();
 private:
 	FrameTimer frame;
-	float tickCounter;
-	const float frameRate = 60.0f ;
+	const float frameRate = 75.0f ;
 	const float secPerFrame = 1.0f / frameRate;
 
 	Graphics gfx;

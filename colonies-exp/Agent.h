@@ -13,7 +13,7 @@ public:
 	Agent(Agent& src);
 	Agent(Agent&& src) noexcept;
 
-	void Update(const std::vector<Pheromone>& ph, const std::vector<Food>& fd);
+	void Update(float deltaTime, const std::vector<Pheromone>& ph, const std::vector<Food>& fd);
 	void Draw(Graphics& gfx);
 	Vec2<float> getPos() const;
 private:

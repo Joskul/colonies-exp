@@ -20,7 +20,7 @@ struct Color {
 	{
 	}
 	Color operator* (const float& fac) const {
-		return Color(r * fac, g * fac, b * fac);
+		return Color(Uint8(r * fac), Uint8(g * fac), Uint8(b * fac));
 	}
 	Color& operator*= (const float& fac) {
 		return *this = *this * fac;

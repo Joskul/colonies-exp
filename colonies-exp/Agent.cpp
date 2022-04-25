@@ -30,7 +30,7 @@ Agent::Agent(Agent&& src) noexcept
 {
 }
 
-void Agent::Update(const std::vector<Pheromone>& ph, const std::vector<Food>& fd) {
+void Agent::Update(float deltaTime, const std::vector<Pheromone>& ph, const std::vector<Food>& fd) {
 
 	if (fd.size() > 0) {
 		Vec2<float> nearestFood = fd[0].getPos();
@@ -51,16 +51,18 @@ void Agent::Update(const std::vector<Pheromone>& ph, const std::vector<Food>& fd
 
 	desiredDirection.Normalize();
 
-	pos += desiredDirection * speed;
+	pos += desiredDirection * speed * deltaTime;
 	c = holdingFood ? Color(192, 255, 192): Colors::White;
 }
 
 void Agent::Draw(Graphics& gfx)
 {
-	gfx.putPixel(pos.x - 1, pos.y - 1, c);
-	gfx.putPixel(pos.x, pos.y - 1, c);
-	gfx.putPixel(pos.x - 1, pos.y, c);
-	gfx.putPixel(pos.x, pos.y, c);
+	int x = (int)pos.x;
+	int y = (int)pos.y;
+	gfx.putPixel(x - 1, y - 1, c);
+	gfx.putPixel(x, y - 1, c);
+	gfx.putPixel(x - 1, y, c);
+	gfx.putPixel(x, y, c);
 }
 
 Vec2<float> Agent::getPos() const

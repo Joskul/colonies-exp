@@ -7,13 +7,9 @@
 
 class World {
 public:
-	World(int antCount, float antSpeed, float wanderRate, int phSpawnRate, float dissipationRate)
+	World(int antCount)
 		:
-		antCount(antCount),
-		antSpeed(antSpeed),
-		wanderRate(wanderRate),
-		phSpawnRate(phSpawnRate),
-		dissipationRate(dissipationRate)
+		antCount(antCount)
 	{
 		for (int i = 0; i < antCount; i++) {
 			ants.emplace_back(colonyPos, antSpeed, wanderRate);
@@ -21,10 +17,10 @@ public:
 		// foods.emplace_back(Vec2<float>(800, 800));
 	}
 
-	void Update() {
+	void Update(float deltaTime) {
 		int i = 0;
 		for (auto& ant : ants) {
-			ant.Update(pheromones, foods);
+			ant.Update(deltaTime, pheromones, foods);
 			if ((frame + i) % phSpawnRate == 0) {
 				spawnPheromone(Pheromone::Type::toHome, ant.getPos());
 			}
@@ -35,11 +31,11 @@ public:
 				ph = pheromones.erase(ph);
 			}
 			else {
-				ph->Update();
+				ph->Update(deltaTime);
 				ph++;
 			}
 		}
-		frame >= phSpawnRate ? frame = 0 : frame++;
+		frame++;
 	}
 
 	void Draw(Graphics& gfx) {
@@ -63,14 +59,15 @@ public:
 	}
 private:
 	void spawnPheromone(Pheromone::Type setType, Vec2<float> setPos) {
-		pheromones.emplace_back(setType, dissipationRate, setPos);
+		pheromones.emplace_back(setType, dissipationRate, depletionThreshold, setPos);
 	}
 
 	const int antCount;
-	const float antSpeed;
-	const float wanderRate;
-	const int phSpawnRate;
-	const float dissipationRate;
+	const float antSpeed = 15.0f;
+	const float wanderRate = 0.15f;
+	const int phSpawnRate = 12;
+	const float dissipationRate = 0.7f;
+	const float depletionThreshold = 0.2f;
 	int frame = 0;
 	std::vector<Pheromone> pheromones;
 	std::vector<Agent> ants;
