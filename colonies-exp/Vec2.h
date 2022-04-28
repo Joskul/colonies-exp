@@ -65,6 +65,15 @@ public:
 			return *this;
 		}
 	}
+	Vec2& Rotate(const T deg) {
+		return *this = GetRotated(deg);
+	}
+	Vec2 GetRotated(const T deg) const {
+		const T rad = float(M_PI) * deg / 180.0f;
+		const T sinRad = std::sin(rad);
+		const T cosRad = std::cos(rad);
+		return { (x * cosRad) - (y * sinRad), (x * sinRad) + (y * cosRad) };
+	}
 	float GetTheta() const
 	{
 		return atan2(y, x);
