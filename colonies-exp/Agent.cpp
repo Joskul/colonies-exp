@@ -30,32 +30,56 @@ Agent::Agent(Agent&& src) noexcept
 {
 }
 
-void Agent::Update(float deltaTime, const std::vector<Pheromone>& ph, const std::vector<Food>& fd) {
+void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromones, const std::vector<Food>& foods) {
 
-	if (fd.size() > 0) {
-		Vec2<float> nearestFood = fd[0].getPos();
-		for (auto food : fd) {
-			if ((food.getPos() - pos).GetLengthSq() > (nearestFood - pos).GetLengthSq()) {
-				continue;
-			};
-			nearestFood = food.getPos();
+	if (foods.size() && !holdingFood) {
+		Vec2<float> nearestFood = foods[0].getPos();
+
+		for (const auto& fd : foods) {
+			if ((fd.getPos() - pos).GetLengthSq() > (nearestFood - pos).GetLengthSq()) { continue; };
+			nearestFood = fd.getPos();
 		}
+
 		if (!((nearestFood - pos).GetLengthSq() > std::pow(detectionRange, 2))) {
-			desiredDirection += (nearestFood - pos).GetNormalized() * 10;
+			desiredDirection += (nearestFood - pos).GetNormalized() * foodInfluence;
+			if ((pos - nearestFood).GetLengthSq() <= 1.5f) {
+				holdingFood = true;
+			}
 		}
-		// TODO: Eat da food
 	}
 
-	Vec2<float> randomDir = Vec2<float>{ randDist(rng),randDist(rng) };
+	if (pheromones.size()) {
+
+		Pheromone::Type targetType = holdingFood ? Pheromone::Type::toHome : Pheromone::Type::toFood;
+
+		for (const auto& ph : pheromones) {
+			if (ph.getType() != targetType) { continue; }
+
+			// is within detection range
+			const Vec2<float> toEntity = ph.getPos() - pos;
+			const float entityDistance = toEntity.GetLength();
+			if (entityDistance > detectionRange) { continue; }
+
+			//is within detection angle
+			const Vec2<float> detectionVec = desiredDirection.GetRotated(fov);
+			const float dotThreshold = desiredDirection * detectionVec;
+			if ((desiredDirection * toEntity) >= dotThreshold) { continue; }
+
+			const float influence = phInfluence / (ph.getIntensity());
+			desiredDirection += toEntity.GetNormalized() * influence;
+		}
+	}
+
+	Vec2<float> randomDir = Vec2<float>{ randDist(rng),randDist(rng) }; // TODO: make it dependent on time
 	desiredDirection += randomDir;
 
 	desiredDirection.Normalize();
 
 	pos += desiredDirection * speed * deltaTime;
-	c = holdingFood ? Color(192, 255, 192): Colors::White;
+	c = holdingFood ? Colors::Blue: Colors::Red;
 }
 
-void Agent::Draw(Graphics& gfx)
+void Agent::Draw(Graphics& gfx) const
 {
 	int x = (int)pos.x;
 	int y = (int)pos.y;
@@ -68,4 +92,9 @@ void Agent::Draw(Graphics& gfx)
 Vec2<float> Agent::getPos() const
 {
 	return pos;
+}
+
+bool Agent::isHoldingFood() const
+{
+	return holdingFood;
 }

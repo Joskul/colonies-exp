@@ -25,7 +25,7 @@ struct Color {
 	Color& operator*= (const float& fac) {
 		return *this = *this * fac;
 	}
-	Uint8 r, g, b;
+	Uint8 r = 0, g = 0, b = 0;
 	Uint8 a = 255;
 };
 

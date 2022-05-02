@@ -17,8 +17,6 @@ public:
 	bool running();
 private:
 	FrameTimer frame;
-	const float frameRate = 75.0f ;
-	const float secPerFrame = 1.0f / frameRate;
 
 	Graphics gfx;
 	World colony;

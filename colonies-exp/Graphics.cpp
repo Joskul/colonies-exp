@@ -43,6 +43,48 @@ void Graphics::putPixel(int x, int y, Color c)
 	putPixel(x, y, c.r, c.g, c.b, c.a);
 }
 
+void Graphics::drawCircle(const int x, const int y, const float radius, const Color c)
+{
+    int offsetx, offsety, d;
+
+    offsetx = 0;
+    offsety = radius;
+    d = radius - 1;
+
+    SDL_SetRenderDrawColor(ren, c.r, c.g, c.b, c.a);
+
+    while (offsety >= offsetx) {
+        SDL_RenderDrawLine(ren, x - offsety, y + offsetx,
+            x + offsety, y + offsetx);
+        SDL_RenderDrawLine(ren, x - offsetx, y + offsety,
+            x + offsetx, y + offsety);
+        SDL_RenderDrawLine(ren, x - offsetx, y - offsety,
+            x + offsetx, y - offsety);
+        SDL_RenderDrawLine(ren, x - offsety, y - offsetx,
+            x + offsety, y - offsetx);
+
+        if (d >= 2 * offsetx) {
+            d -= 2 * offsetx + 1;
+            offsetx += 1;
+        }
+        else if (d < 2 * (radius - offsety)) {
+            d += 2 * offsety - 1;
+            offsety -= 1;
+        }
+        else {
+            d += 2 * (offsety - offsetx - 1);
+            offsety -= 1;
+            offsetx += 1;
+        }
+    }
+}
+
+void Graphics::drawLine(const int x1, const int y1, const int x2, const int y2, const Color c)
+{
+	SDL_SetRenderDrawColor(ren, c.r, c.g, c.b, c.a);
+	SDL_RenderDrawLine(ren, x1, y1, x2, y2);
+}
+
 bool Graphics::valid() const
 {
 	return isRunning;

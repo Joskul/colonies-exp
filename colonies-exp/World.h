@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <algorithm>
 #include "Vec2.h"
 #include "Entity.h"
 #include "Agent.h"
@@ -7,25 +8,27 @@
 
 class World {
 public:
-	World(int antCount)
-		:
-		antCount(antCount)
+	World()
 	{
 		for (int i = 0; i < antCount; i++) {
 			ants.emplace_back(colonyPos, antSpeed, wanderRate);
 		}
-		// foods.emplace_back(Vec2<float>(800, 800));
+		for (int x = 0; x < 1280; x++) {
+			foods.emplace_back(Vec2<float>((float)x, 200.0f));
+		}
 	}
 
 	void Update(float deltaTime) {
 		int i = 0;
 		for (auto& ant : ants) {
 			ant.Update(deltaTime, pheromones, foods);
-			if ((frame + i) % phSpawnRate == 0) {
-				spawnPheromone(Pheromone::Type::toHome, ant.getPos());
+			if ((frame + i) % phSpawnRate == 0) { // TODO: make pheromone deployment dependent on time **somehow impossible
+				Pheromone::Type targetType = ant.isHoldingFood() ? Pheromone::Type::toFood : Pheromone::Type::toHome;
+				spawnPheromone(targetType, ant.getPos());
 			}
 			i++;
 		}
+
 		for (std::vector<Pheromone>::iterator ph = pheromones.begin(); ph != pheromones.end();) {
 			if (ph->isDepleted()) {
 				ph = pheromones.erase(ph);
@@ -35,17 +38,34 @@ public:
 				ph++;
 			}
 		}
+
+		for (std::vector<Food>::iterator fd = foods.begin(); fd != foods.end();) {
+			bool isEaten = false;
+			for (auto& ant : ants) {
+				if ((ant.getPos() - fd->getPos()).GetLengthSq() <= 1.0f && !ant.isHoldingFood()) {
+					isEaten = true;
+					break;
+				}
+			}
+			if (isEaten) {
+				fd = foods.erase(fd);
+			}
+			else {
+				fd++;
+			}
+		}
 		frame++;
 	}
 
 	void Draw(Graphics& gfx) {
-		for (auto ph : pheromones) {
+		home.Draw(gfx);
+		for (const auto& ph : pheromones) {
 			ph.Draw(gfx);
 		}
-		for (auto ant : ants) {
+		for (const auto& ant : ants) {
 			ant.Draw(gfx);
 		}
-		for (auto food : foods) {
+		for (const auto& food : foods) {
 			food.Draw(gfx);
 		}
 	}
@@ -62,16 +82,17 @@ private:
 		pheromones.emplace_back(setType, dissipationRate, depletionThreshold, setPos);
 	}
 
-	const int antCount;
+	const int antCount = 100;
 	const float antSpeed = 15.0f;
 	const float wanderRate = 0.15f;
-	const int phSpawnRate = 12;
-	const float dissipationRate = 0.7f;
-	const float depletionThreshold = 0.2f;
+	const int phSpawnRate = 60;
+	const float dissipationRate = 0.95f;
+	const float depletionThreshold = 0.05f;
 	int frame = 0;
 	std::vector<Pheromone> pheromones;
 	std::vector<Agent> ants;
 	std::vector<Food> foods;
 
 	Vec2<float> colonyPos{ 640,360 };
+	Colony home{colonyPos};
 };

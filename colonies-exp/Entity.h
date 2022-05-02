@@ -12,12 +12,10 @@ public:
 	Vec2<float> getPos() const {
 		return pos;
 	}
-	void Draw(Graphics& gfx) {
+	virtual void Draw(Graphics& gfx) const
+	{
 		int x = (int)pos.x;
 		int y = (int)pos.y;
-		gfx.putPixel(x - 1, y - 1, c);
-		gfx.putPixel(x, y - 1, c);
-		gfx.putPixel(x - 1, y, c);
 		gfx.putPixel(x, y, c);
 	}
 protected:
@@ -58,23 +56,33 @@ public:
 		}
 		baseColor = c;
 	}
-	Type getType() {
+	Type getType() const {
 		return type;
 	}
 
-	// linear depletion -- flashes when the trail ends
+	void Draw(Graphics& gfx) const
+	{
+		int x = (int)pos.x;
+		int y = (int)pos.y;
+		gfx.putPixel(x - 1, y - 1, c);
+		gfx.putPixel(x, y - 1, c);
+		gfx.putPixel(x - 1, y, c);
+		gfx.putPixel(x, y, c);
+	}
+
+	// linear depletion -- sometimes flashes when the trail ends
 	//void Update(float deltaTime) {
 	//	intensity -= dissipationRate * deltaTime;
-	//	c = baseColor * (1.0f / (1.0f - depletionThreshold)) * (intensity - depletionThreshold); // smoothed calculation
-	//	//c = baseColor * intensity; // unmapped calculation
+	//	//c = baseColor * (1.0f / (1.0f - depletionThreshold)) * (intensity - depletionThreshold); // smoothed calculation
+	//	c = baseColor * intensity; // unmapped calculation ++ Recommended since the threshold isn't required
 	//}
 
-	// reciprocal depletion
+	// reciprocal depletion -- halves the performance
 	void Update(float deltaTime) {
 		timeCounter += deltaTime;
 		intensity = std::pow(dissipationRate, timeCounter);
-		c = baseColor * (1.0f / (1.0f - depletionThreshold)) * (intensity - depletionThreshold); // smoothed calculation
-		//c = baseColor * intensity; // unmapped calculation
+		//c = baseColor * (1.0f / (1.0f - depletionThreshold)) * (intensity - depletionThreshold); // smoothed calculation -- output color seems kinda weird
+		c = baseColor * intensity; // unmapped calculation
 	}
 
 	float getIntensity() const {
@@ -99,12 +107,16 @@ public:
 		:
 		Entity(setPos)
 	{
-		c = Colors::Blue;
+		c = Colors::White;
+	}
+	void Draw(Graphics& gfx) {
+		gfx.drawCircle((int)pos.x, (int)pos.y, 12.0f, c);
 	}
 private:
 };
 
 class Food : public Entity {
+public:
 	Food(Vec2<float> setPos) 
 		:
 		Entity(setPos)

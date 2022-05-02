@@ -1,5 +1,6 @@
 #pragma once
 
+#include <corecrt_math_defines.h>
 #include <cmath>
 
 template<typename T>
@@ -34,6 +35,10 @@ public:
 	{
 		return *this = *this * rhs;
 	}
+	T operator*(const Vec2& rhs) const
+	{
+		return (x * rhs.x) + (y * rhs.y);
+	}
 	Vec2 operator-(const Vec2& rhs) const
 	{
 		return Vec2(x - rhs.x, y - rhs.y);
@@ -41,6 +46,9 @@ public:
 	Vec2& operator-=(const Vec2& rhs)
 	{
 		return *this = *this - rhs;
+	}
+	bool operator==(const Vec2& rhs) {
+		return ((int)x == (int)rhs.x) && ((int)y == (int)rhs.y);
 	}
 	T GetLength() const
 	{
@@ -69,7 +77,7 @@ public:
 		return *this = GetRotated(deg);
 	}
 	Vec2 GetRotated(const T deg) const {
-		const T rad = float(M_PI) * deg / 180.0f;
+		const T rad = T(M_PI) * deg / 180.0f;
 		const T sinRad = std::sin(rad);
 		const T cosRad = std::cos(rad);
 		return { (x * cosRad) - (y * sinRad), (x * sinRad) + (y * cosRad) };

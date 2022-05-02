@@ -6,8 +6,11 @@ class Graphics {
 public:
 	Graphics(const char* title, int setX, int setY, bool fullscreen = false);
 	~Graphics();
-	void putPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255);
-	void putPixel(int x, int y, Color c);
+	void putPixel(const int x, const int y, const Uint8 r, const Uint8 g, const Uint8 b, const Uint8 a = 255);
+	void putPixel(const int x, const int y, const Color c);
+
+	void drawCircle(const int x, const int y, const float radius, const Color c);
+	void drawLine(const int x1, const int y1, const int x2, const int y2, const Color c);
 
 	bool valid() const;
 	void terminate();

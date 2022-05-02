@@ -13,18 +13,24 @@ public:
 	Agent(Agent& src);
 	Agent(Agent&& src) noexcept;
 
-	void Update(float deltaTime, const std::vector<Pheromone>& ph, const std::vector<Food>& fd);
-	void Draw(Graphics& gfx);
+	void Update(const float deltaTime, const std::vector<Pheromone>& pheromones, const std::vector<Food>& foods);
+	void Draw(Graphics& gfx) const;
 	Vec2<float> getPos() const;
+
+	bool isHoldingFood() const;
 private:
 	Vec2<float> pos{ 0.0f, 0.0f };
 	Vec2<float> desiredDirection{ 0.0f,0.0f };
-	float speed;
-	float wanderRate = 0.0f;
-	float detectionRange = 5.0f;
+	const float speed;
+	const float wanderRate = 0.0f;
+	const float detectionRange = 15.0f;
+	const float foodInfluence = 10.0f;
+	const float phInfluence = 0.01f;
+	const float fov = 120.0f;
 	bool holdingFood = false;
 
-	Color c = Colors::White;
-	std::minstd_rand rng;
+	Color c = Colors::Red;
+	std::minstd_rand rng; // ~1.5x the performance of mt19937
+	//std::mt19937 rng;
 	std::uniform_real_distribution<float> randDist;
 };

@@ -4,8 +4,7 @@
 
 Game::Game(const char* title, int setX, int setY, bool fullscreen)
 	:
-	gfx(title, setX, setY, fullscreen),
-	colony(1000)
+	gfx(title, setX, setY, fullscreen)
 {
 }
 
