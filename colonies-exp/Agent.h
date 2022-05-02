@@ -18,14 +18,16 @@ public:
 	Vec2<float> getPos() const;
 
 	bool isHoldingFood() const;
+	void giveFood();
+	void takeFood();
 private:
 	Vec2<float> pos{ 0.0f, 0.0f };
 	Vec2<float> desiredDirection{ 0.0f,0.0f };
 	const float speed;
 	const float wanderRate = 0.0f;
-	const float detectionRange = 15.0f;
+	const float detectionRange = 25.0f;
 	const float foodInfluence = 10.0f;
-	const float phInfluence = 0.01f;
+	const float phInfluence = 0.001f;
 	const float fov = 120.0f;
 	bool holdingFood = false;
 

@@ -42,9 +42,6 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 
 		if (!((nearestFood - pos).GetLengthSq() > std::pow(detectionRange, 2))) {
 			desiredDirection += (nearestFood - pos).GetNormalized() * foodInfluence;
-			if ((pos - nearestFood).GetLengthSq() <= 1.5f) {
-				holdingFood = true;
-			}
 		}
 	}
 
@@ -52,21 +49,27 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 
 		Pheromone::Type targetType = holdingFood ? Pheromone::Type::toHome : Pheromone::Type::toFood;
 
+		Pheromone const* bestPh = nullptr;
+
 		for (const auto& ph : pheromones) {
 			if (ph.getType() != targetType) { continue; }
+			if (bestPh == nullptr) { bestPh = &ph; }
 
 			// is within detection range
 			const Vec2<float> toEntity = ph.getPos() - pos;
 			const float entityDistance = toEntity.GetLength();
 			if (entityDistance > detectionRange) { continue; }
 
-			//is within detection angle
+			// is within detection angle
 			const Vec2<float> detectionVec = desiredDirection.GetRotated(fov);
 			const float dotThreshold = desiredDirection * detectionVec;
 			if ((desiredDirection * toEntity) >= dotThreshold) { continue; }
 
-			const float influence = phInfluence / (ph.getIntensity());
-			desiredDirection += toEntity.GetNormalized() * influence;
+			if (bestPh->getIntensity() > ph.getIntensity()) { bestPh = &ph; }
+		}
+		if (bestPh != nullptr) {
+			const float influence = phInfluence / std::pow(bestPh->getIntensity(), 2);
+			desiredDirection += (bestPh->getPos() - pos).GetNormalized() * influence;
 		}
 	}
 
@@ -97,4 +100,14 @@ Vec2<float> Agent::getPos() const
 bool Agent::isHoldingFood() const
 {
 	return holdingFood;
+}
+
+void Agent::giveFood()
+{
+	holdingFood = true;
+}
+
+void Agent::takeFood()
+{
+	holdingFood = false;
 }

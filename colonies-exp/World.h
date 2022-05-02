@@ -26,6 +26,9 @@ public:
 				Pheromone::Type targetType = ant.isHoldingFood() ? Pheromone::Type::toFood : Pheromone::Type::toHome;
 				spawnPheromone(targetType, ant.getPos());
 			}
+			if ((ant.getPos() - colonyPos).GetLength() < 12.0f) {
+				ant.takeFood();
+			}
 			i++;
 		}
 
@@ -42,8 +45,9 @@ public:
 		for (std::vector<Food>::iterator fd = foods.begin(); fd != foods.end();) {
 			bool isEaten = false;
 			for (auto& ant : ants) {
-				if ((ant.getPos() - fd->getPos()).GetLengthSq() <= 1.0f && !ant.isHoldingFood()) {
+				if ((ant.getPos() - fd->getPos()).GetLengthSq() < 1.0f && !ant.isHoldingFood()) {
 					isEaten = true;
+					ant.giveFood();
 					break;
 				}
 			}
