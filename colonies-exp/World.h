@@ -21,7 +21,7 @@ public:
 	void Update(float deltaTime) {
 		int i = 0;
 		for (auto& ant : ants) {
-			ant.Update(deltaTime, pheromones, foods);
+			ant.Update(deltaTime, pheromones, foods, home);
 			if ((frame + i) % phSpawnRate == 0) { // TODO: make pheromone deployment dependent on time **somehow impossible
 				Pheromone::Type targetType = ant.isHoldingFood() ? Pheromone::Type::toFood : Pheromone::Type::toHome;
 				spawnPheromone(targetType, ant.getPos());
@@ -62,10 +62,10 @@ public:
 	}
 
 	void Draw(Graphics& gfx) {
-		home.Draw(gfx);
 		for (const auto& ph : pheromones) {
 			ph.Draw(gfx);
 		}
+		home.Draw(gfx);
 		for (const auto& ant : ants) {
 			ant.Draw(gfx);
 		}
@@ -86,7 +86,7 @@ private:
 		pheromones.emplace_back(setType, dissipationRate, depletionThreshold, setPos);
 	}
 
-	const int antCount = 100;
+	const int antCount = 200;
 	const float antSpeed = 15.0f;
 	const float wanderRate = 0.15f;
 	const int phSpawnRate = 60;
@@ -98,5 +98,5 @@ private:
 	std::vector<Food> foods;
 
 	Vec2<float> colonyPos{ 640,360 };
-	Colony home{colonyPos};
+	Colony home{colonyPos, 12.0f};
 };

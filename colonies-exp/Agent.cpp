@@ -1,4 +1,5 @@
 #include "Agent.h"
+#include <algorithm>
 
 Agent::Agent(Vec2<float> setPos, float setSpeed, float setWanderRate)
 	:
@@ -30,7 +31,7 @@ Agent::Agent(Agent&& src) noexcept
 {
 }
 
-void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromones, const std::vector<Food>& foods) {
+void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromones, const std::vector<Food>& foods, const Colony& colony) {
 
 	if (foods.size() && !holdingFood) {
 		Vec2<float> nearestFood = foods[0].getPos();
@@ -51,26 +52,33 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 
 		Pheromone const* bestPh = nullptr;
 
+		const float detectionSq = detectionRange * detectionRange;
+		const Vec2<float> detectionVec = desiredDirection.GetRotated(fov);
+		const float dotThreshold = desiredDirection * detectionVec;
+
 		for (const auto& ph : pheromones) {
 			if (ph.getType() != targetType) { continue; }
-			if (bestPh == nullptr) { bestPh = &ph; }
 
 			// is within detection range
 			const Vec2<float> toEntity = ph.getPos() - pos;
-			const float entityDistance = toEntity.GetLength();
-			if (entityDistance > detectionRange) { continue; }
+			const float entityDistanceSq = toEntity.GetLengthSq();
+			if (entityDistanceSq > detectionSq) { continue; }
 
 			// is within detection angle
-			const Vec2<float> detectionVec = desiredDirection.GetRotated(fov);
-			const float dotThreshold = desiredDirection * detectionVec;
 			if ((desiredDirection * toEntity) >= dotThreshold) { continue; }
 
-			if (bestPh->getIntensity() > ph.getIntensity()) { bestPh = &ph; }
+			if (bestPh == nullptr) { bestPh = &ph; }
+			if (((bestPh->getPos() - pos).GetLengthSq() / bestPh->getIntensity()) < (entityDistanceSq / ph.getIntensity())) { bestPh = &ph; }
 		}
 		if (bestPh != nullptr) {
-			const float influence = phInfluence / std::pow(bestPh->getIntensity(), 2);
+			const float influence = std::min(phInfluence * (float)std::pow((bestPh->getPos() - pos).GetLength(),0.5) / (float)std::pow(bestPh->getIntensity(), 1), phInfluence * 10);
+			//const float influence = phInfluence;
 			desiredDirection += (bestPh->getPos() - pos).GetNormalized() * influence;
 		}
+	}
+
+	if ((pos - colony.getPos()).GetLength() <= colony.getRadius() + detectionRange && holdingFood) {
+		desiredDirection += (colony.getPos() - pos) * 10.0f;
 	}
 
 	Vec2<float> randomDir = Vec2<float>{ randDist(rng),randDist(rng) }; // TODO: make it dependent on time
@@ -104,10 +112,14 @@ bool Agent::isHoldingFood() const
 
 void Agent::giveFood()
 {
+	if (holdingFood) { return; }
 	holdingFood = true;
+	desiredDirection -= desiredDirection * 2.0f;
 }
 
 void Agent::takeFood()
 {
+	if (!holdingFood) { return; }
 	holdingFood = false;
+	desiredDirection -= desiredDirection * 2.0f;
 }

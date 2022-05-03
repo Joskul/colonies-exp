@@ -103,16 +103,21 @@ private:
 
 class Colony : public Entity {
 public:
-	Colony(Vec2<float> setPos)
+	Colony(Vec2<float> setPos, float radius)
 		:
-		Entity(setPos)
+		Entity(setPos),
+		radius(radius)
 	{
 		c = Colors::White;
 	}
 	void Draw(Graphics& gfx) {
-		gfx.drawCircle((int)pos.x, (int)pos.y, 12.0f, c);
+		gfx.drawCircle((int)pos.x, (int)pos.y, radius, c);
+	}
+	float getRadius() const {
+		return radius;
 	}
 private:
+	const float radius;
 };
 
 class Food : public Entity {

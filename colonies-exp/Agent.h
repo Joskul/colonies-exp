@@ -13,7 +13,7 @@ public:
 	Agent(Agent& src);
 	Agent(Agent&& src) noexcept;
 
-	void Update(const float deltaTime, const std::vector<Pheromone>& pheromones, const std::vector<Food>& foods);
+	void Update(const float deltaTime, const std::vector<Pheromone>& pheromones, const std::vector<Food>& foods, const Colony& colony);
 	void Draw(Graphics& gfx) const;
 	Vec2<float> getPos() const;
 
@@ -28,7 +28,7 @@ private:
 	const float detectionRange = 25.0f;
 	const float foodInfluence = 10.0f;
 	const float phInfluence = 0.001f;
-	const float fov = 120.0f;
+	const float fov = 75.0f;
 	bool holdingFood = false;
 
 	Color c = Colors::Red;
