@@ -14,7 +14,7 @@ public:
 			ants.emplace_back(colonyPos, antSpeed, wanderRate);
 		}
 		for (int x = 0; x < 1280; x++) {
-			foods.emplace_back(Vec2<float>((float)x, 200.0f));
+			foods.emplace_back(Vec2<float>((float)x, 300.0f));
 		}
 	}
 

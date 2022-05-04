@@ -33,16 +33,27 @@ Agent::Agent(Agent&& src) noexcept
 
 void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromones, const std::vector<Food>& foods, const Colony& colony) {
 
+	const float detectionSq = detectionRange * detectionRange;
+	const Vec2<float> detectionVec = desiredDirection.GetRotated(fov);
+	const float dotThreshold = desiredDirection * detectionVec;
+
 	if (foods.size() && !holdingFood) {
-		Vec2<float> nearestFood = foods[0].getPos();
+		Food const* bestFd = nullptr;
 
 		for (const auto& fd : foods) {
-			if ((fd.getPos() - pos).GetLengthSq() > (nearestFood - pos).GetLengthSq()) { continue; };
-			nearestFood = fd.getPos();
-		}
 
-		if (!((nearestFood - pos).GetLengthSq() > std::pow(detectionRange, 2))) {
-			desiredDirection += (nearestFood - pos).GetNormalized() * foodInfluence;
+			// is within detection range
+			const Vec2<float> toEntity = fd.getPos() - pos;
+			const float entityDistanceSq = toEntity.GetLengthSq();
+			if (entityDistanceSq > detectionSq) { continue; }
+
+			// is within detection angle
+			if ((desiredDirection * toEntity) >= dotThreshold) { continue; }
+
+			if (bestFd == nullptr || entityDistanceSq < (bestFd->getPos() - pos).GetLengthSq()) { bestFd = &fd; }
+		}
+		if (bestFd != nullptr) {
+			desiredDirection += (bestFd->getPos() - pos).GetNormalized() * foodInfluence;
 		}
 	}
 
@@ -51,10 +62,6 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 		Pheromone::Type targetType = holdingFood ? Pheromone::Type::toHome : Pheromone::Type::toFood;
 
 		Pheromone const* bestPh = nullptr;
-
-		const float detectionSq = detectionRange * detectionRange;
-		const Vec2<float> detectionVec = desiredDirection.GetRotated(fov);
-		const float dotThreshold = desiredDirection * detectionVec;
 
 		for (const auto& ph : pheromones) {
 			if (ph.getType() != targetType) { continue; }
@@ -68,16 +75,17 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 			if ((desiredDirection * toEntity) >= dotThreshold) { continue; }
 
 			if (bestPh == nullptr) { bestPh = &ph; }
-			if (((bestPh->getPos() - pos).GetLengthSq() / bestPh->getIntensity()) < (entityDistanceSq / ph.getIntensity())) { bestPh = &ph; }
+			if (((bestPh->getPos() - pos).GetLengthSq()) < (entityDistanceSq)) { bestPh = &ph; }
+			//const float influence = phInfluence * entityDistanceSq / std::pow(ph.getIntensity(), 0.5f);
 		}
 		if (bestPh != nullptr) {
-			const float influence = std::min(phInfluence * (float)std::pow((bestPh->getPos() - pos).GetLength(),0.5) / (float)std::pow(bestPh->getIntensity(), 1), phInfluence * 10);
+			const float influence = phInfluence /** (float)std::pow((bestPh->getPos() - pos).GetLength(),0.5)*/ / (float)std::pow(bestPh->getIntensity(), 2);
 			//const float influence = phInfluence;
 			desiredDirection += (bestPh->getPos() - pos).GetNormalized() * influence;
 		}
 	}
 
-	if ((pos - colony.getPos()).GetLength() <= colony.getRadius() + detectionRange && holdingFood) {
+	if ((pos - colony.getPos()).GetLength() <= colony.getRadius() + detectionRange && holdingFood && desiredDirection * (pos - colony.getPos()) < dotThreshold) {
 		desiredDirection += (colony.getPos() - pos) * 10.0f;
 	}
 
@@ -87,17 +95,22 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 	desiredDirection.Normalize();
 
 	pos += desiredDirection * speed * deltaTime;
-	c = holdingFood ? Colors::Blue: Colors::Red;
+	c = holdingFood ? Colors::Blue : Colors::Red;
 }
 
 void Agent::Draw(Graphics& gfx) const
 {
-	int x = (int)pos.x;
-	int y = (int)pos.y;
-	gfx.putPixel(x - 1, y - 1, c);
-	gfx.putPixel(x, y - 1, c);
-	gfx.putPixel(x - 1, y, c);
-	gfx.putPixel(x, y, c);
+	gfx.putPixel(int(pos.x + 0.5f), int(pos.y + 0.5f), c);
+	gfx.putPixel(int(pos.x + 0.5f), int(pos.y - 0.5f), c);
+	gfx.putPixel(int(pos.x - 0.5f), int(pos.y + 0.5f), c);
+	gfx.putPixel(int(pos.x - 0.5f), int(pos.y - 0.5f), c);
+	gfx.putPixel(int(pos.x - 0.5f), int(pos.y), c);
+	gfx.putPixel(int(pos.x + 0.5f), int(pos.y), c);
+	gfx.putPixel(int(pos.x), int(pos.y - 0.5f), c);
+	gfx.putPixel(int(pos.x), int(pos.y + 0.5f), c);
+	gfx.putPixel(int(pos.x), int(pos.y), c);
+
+	gfx.drawLine(pos.x, pos.y, (pos + (desiredDirection * 2.0f)).x, (pos + (desiredDirection * 2.0f)).y, c);
 }
 
 Vec2<float> Agent::getPos() const
