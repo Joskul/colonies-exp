@@ -25,6 +25,7 @@ private:
 	Vec2<float> desiredDirection{ 0.0f,0.0f };
 	const float speed;
 	const float wanderRate = 0.0f;
+	const float angleWanderRate = 600.0f;
 	const float detectionRange = 25.0f;
 	const float foodInfluence = 10.0f;
 	const float phInfluence = 0.0005f;
@@ -35,4 +36,5 @@ private:
 	std::minstd_rand rng; // ~1.5x the performance of mt19937
 	//std::mt19937 rng;
 	std::uniform_real_distribution<float> randDist;
+	std::uniform_real_distribution<float> randAngle;
 };
