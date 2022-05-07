@@ -25,10 +25,10 @@ private:
 	Vec2<float> desiredDirection{ 0.0f,0.0f };
 	const float speed;
 	const float wanderRate = 0.0f;
-	const float angleWanderRate = 600.0f;
+	const float angleWanderRate = 540.0f;
 	const float detectionRange = 25.0f;
-	const float foodInfluence = 10.0f;
-	const float phInfluence = 0.0005f;
+	const float foodInfluence = 540.0f;
+	const float phInfluence = 30.0f;
 	const float fov = 60.0f;
 	bool holdingFood = false;
 

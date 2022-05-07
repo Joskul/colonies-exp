@@ -46,6 +46,8 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 
 	Entity const* targetEntity = nullptr;
 
+	float influenceAngle = 0.0f;
+
 	if (foods.size() && !holdingFood) {
 		Food const* bestFd = nullptr;
 
@@ -62,8 +64,10 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 			if (bestFd == nullptr || entityDistanceSq < (bestFd->getPos() - pos).GetLengthSq()) { bestFd = &fd; }
 		}
 		targetEntity = bestFd;
+		influenceAngle = foodInfluence;
 	} else if ((pos - colony.getPos()).GetLength() <= colony.getRadius() + detectionRange && holdingFood && desiredDirection * (pos - colony.getPos()) < dotThreshold) {
 		targetEntity = &colony;
+		influenceAngle = foodInfluence;
 	}
 
 	if (pheromones.size()) {
@@ -86,11 +90,12 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 			if ((desiredDirection * toEntity) >= dotThreshold) { continue; }
 
 			if (bestPh == nullptr) { bestPh = &ph; counter = 1; }
-			if (bestPh->getIntensity() > ph.getIntensity()) { bestPh = &ph; counter++; }
+			if ((bestPh->getPos() - pos).GetLengthSq() / bestPh->getIntensity() <= entityDistanceSq / ph.getIntensity()) { bestPh = &ph; counter++; }
 			//const float influence = phInfluence * entityDistanceSq / std::pow(ph.getIntensity(), 0.5f);
 		}
 		if (targetEntity == nullptr) {
-			targetEntity = counter <= 1 ? nullptr : bestPh;
+			targetEntity = bestPh;
+			influenceAngle = phInfluence;
 		}
 	}
 
@@ -99,15 +104,18 @@ void Agent::Update(const float deltaTime, const std::vector<Pheromone>& pheromon
 	if (targetEntity != nullptr) {
 		const Vec2<float> toEntity{ targetEntity->getPos() - pos };
 
+		const float turnRate = influenceAngle;
 		if (toEntity * detectionVec > toEntity * detectionVecL) {
-			desiredDirection.Rotate(45 * deltaTime);
+			desiredDirection.Rotate(turnRate * deltaTime);
 		}
 		else {
-			desiredDirection.Rotate(-45 * deltaTime);
+			desiredDirection.Rotate(-turnRate * deltaTime);
 		}
 	}
+	else {
+		desiredDirection.Rotate(randAngle(rng) * deltaTime);
+	}
 
-	desiredDirection.Rotate(randAngle(rng) * deltaTime);
 
 	desiredDirection.Normalize();
 
@@ -144,7 +152,7 @@ void Agent::giveFood()
 {
 	if (holdingFood) { return; }
 	holdingFood = true;
-	desiredDirection -= desiredDirection * 2.0f;
+	//desiredDirection -= desiredDirection * 2.0f;
 }
 
 void Agent::takeFood()
