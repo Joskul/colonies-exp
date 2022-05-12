@@ -89,9 +89,9 @@ private:
 	const int antCount = 200;
 	const float antSpeed = 15.0f;
 	const float wanderRate = 0.15f;
-	const int phSpawnRate = 60;
+	const int phSpawnRate = 80;
 	const float dissipationRate = 0.95f;
-	const float depletionThreshold = 0.05f;
+	const float depletionThreshold = 0.01f;
 	int frame = 0;
 	std::vector<Pheromone> pheromones;
 	std::vector<Agent> ants;

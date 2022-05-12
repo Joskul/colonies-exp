@@ -4,7 +4,8 @@
 
 Game::Game(const char* title, int setX, int setY, bool fullscreen)
 	:
-	gfx(title, setX, setY, fullscreen)
+	gfx(title, setX, setY, fullscreen),
+	input(event)
 {
 }
 
@@ -14,7 +15,6 @@ Game::~Game()
 
 void Game::handleEvents()
 {
-	SDL_Event event;
 	SDL_PollEvent(&event);
 	switch (event.type) {
 	case SDL_QUIT:
@@ -31,7 +31,10 @@ void Game::updateModel()
 	const float deltaTime = frame.Mark();
 	colony.Update(deltaTime);
 
-	std::cout << "FPS: " << 1 / deltaTime << std::endl;
+	std::cout << "X: " << input.mouse.getMousePos().x << "\nY: " << input.mouse.getMousePos().y << std::endl;
+	std::cout << "Wheel: " << input.mouse.wheelY() << std::endl;
+
+	//std::cout << "FPS: " << 1 / deltaTime << std::endl;
 }
 
 void Game::drawModel()
@@ -40,6 +43,8 @@ void Game::drawModel()
 	//draw stuff here
 
 	colony.Draw(gfx);
+
+	gfx.putPixel(500, input.mouse.getWheelPos().y, Colors::Green);
 
 	gfx.renderPresent();
 }

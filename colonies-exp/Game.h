@@ -4,6 +4,7 @@
 #include "World.h"
 #include "Graphics.h"
 #include "FrameTimer.h"
+#include "InputHandler.h"
 
 class Game {
 public:
@@ -18,6 +19,9 @@ public:
 private:
 	FrameTimer frame;
 
+	SDL_Event event;
+
 	Graphics gfx;
 	World colony;
+	Input input;
 };

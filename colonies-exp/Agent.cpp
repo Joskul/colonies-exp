@@ -135,7 +135,7 @@ void Agent::Draw(Graphics& gfx) const
 	gfx.putPixel(int(pos.x), int(pos.y + 0.5f), c);
 	gfx.putPixel(int(pos.x), int(pos.y), c);
 
-	gfx.drawLine(pos.x, pos.y, (pos + (desiredDirection * 2.0f)).x, (pos + (desiredDirection * 2.0f)).y, c);
+	gfx.drawLine((int)pos.x, (int)pos.y, (int)(pos + (desiredDirection * 2.0f)).x, (int)(pos + (desiredDirection * 2.0f)).y, c);
 }
 
 Vec2<float> Agent::getPos() const
@@ -152,12 +152,12 @@ void Agent::giveFood()
 {
 	if (holdingFood) { return; }
 	holdingFood = true;
-	//desiredDirection -= desiredDirection * 2.0f;
+	desiredDirection *= -1;
 }
 
 void Agent::takeFood()
 {
 	if (!holdingFood) { return; }
 	holdingFood = false;
-	desiredDirection -= desiredDirection * 2.0f;
+	desiredDirection *= -1;
 }
